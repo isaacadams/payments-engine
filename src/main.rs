@@ -1,8 +1,8 @@
 use std::{env, error::Error};
 
-mod transaction;
+mod models;
 
-use transaction::{Transaction};
+use models::transaction::{Transaction};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
