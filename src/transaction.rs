@@ -19,6 +19,6 @@ pub struct Transaction {
     #[serde(rename = "client")]
     client_id: u16,
     #[serde(rename = "tx")]
-    tx_id: u16,
-    amt: u32,
+    tx_id: u32,
+    amt: f32,
 }
