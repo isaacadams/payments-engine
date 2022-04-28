@@ -1,5 +1,9 @@
 use std::{env, error::Error};
 
+mod transaction;
+
+use transaction::{Transaction};
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     let transactions_path = &args[1];
@@ -16,8 +20,8 @@ fn read(path: &str) -> Result<(), Box<dyn Error>> {
         .has_headers(true)
         .from_path(path)?;
 
-    for result in rdr.records() {
-        let record = result?;
+    for result in rdr.deserialize() {
+        let record: Transaction = result?;
         println!("{:?}", record);
     }
 
