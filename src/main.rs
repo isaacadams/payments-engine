@@ -7,16 +7,16 @@ use transaction::{Transaction};
 fn main() {
     let args: Vec<String> = env::args().collect();
     let transactions_path = &args[1];
-    println!("{:?}", &transactions_path);
 
     if let Err(err) = read(&transactions_path) {
-        println!("error running example: {}", err);
+        println!("failed to read csv file: {}\n   -> error: {}", transactions_path, err);
     }
 }
 
 
 fn read(path: &str) -> Result<(), Box<dyn Error>> {
     let mut rdr = csv::ReaderBuilder::new()
+        .trim(csv::Trim::All)
         .has_headers(true)
         .from_path(path)?;
 
