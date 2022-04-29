@@ -38,22 +38,17 @@ impl<T: Database> TransactionHandler<T> {
                 }
             }
             TransactionType::Dispute => {
-                let (mut amt, mut client_id): (f32, u16) = (0_f32, 0);
+                match self.get_transaction_details(x.tx_id) {
+                    None => return Err(PaymentEngineError::ExpectedTransactionToExist(x)),
+                    Some((amt, client_id)) => {
+                        if x.client_id != client_id {
+                            return Err(PaymentEngineError::ExpectedClientIdToMatch(x));
+                        }
 
-                {
-                    if let Some(txn) = self.database.get_transaction(x.tx_id) {
-                        (amt, client_id) = (txn.get_amt(), txn.client_id);
-                    } else {
-                        return Err(PaymentEngineError::ExpectedTransactionToExist(x));
+                        let account = self.database.fetch_client_mut(x.client_id);
+                        account.dispute(amt);
                     }
-                }
-
-                if x.client_id != client_id {
-                    return Err(PaymentEngineError::ExpectedClientIdToMatch(x));
-                }
-
-                let account = self.database.fetch_client_mut(x.client_id);
-                account.dispute(amt);
+                };
             }
             _ => (),
             /*
@@ -63,6 +58,12 @@ impl<T: Database> TransactionHandler<T> {
         };
 
         Ok(())
+    }
+
+    fn get_transaction_details(&self, id: u32) -> Option<(f32, u16)> {
+        self.database
+            .get_transaction(id)
+            .map(|txn| (txn.get_amt(), txn.client_id))
     }
 
     pub fn get_database(self) -> T {
