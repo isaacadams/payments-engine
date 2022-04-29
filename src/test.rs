@@ -71,6 +71,50 @@ fn test_withdraw_takes_funds_from_available() {
 }
 
 #[test]
+fn test_dispute_moves_available_to_held() {
+    let mut database = get_database();
+
+    handle_transaction(
+        &mut database,
+        Transaction {
+            tx_type: TransactionType::Deposit,
+            client_id: 1,
+            tx_id: 1,
+            amt: Some(50_f32),
+        },
+    )
+    .unwrap();
+
+    handle_transaction(
+        &mut database,
+        Transaction {
+            tx_type: TransactionType::Deposit,
+            client_id: 1,
+            tx_id: 2,
+            amt: Some(50_f32),
+        },
+    )
+    .unwrap();
+
+    handle_transaction(
+        &mut database,
+        Transaction {
+            tx_type: TransactionType::Dispute,
+            client_id: 1,
+            tx_id: 2,
+            amt: None,
+        },
+    )
+    .unwrap();
+
+    let client_1: Account = database.fetch_client_ref(1).into();
+
+    assert_eq!(client_1.available, 50_f32);
+    assert_eq!(client_1.held, 50_f32);
+    assert_eq!(client_1.total, 100_f32);
+}
+
+#[test]
 fn test_deposit_throws_expected_amt_err() {
     let mut database = get_database();
     let tx = Transaction {
@@ -154,6 +198,22 @@ fn test_withdraw_throws_not_enough_funds_err() {
 
     assert_eq!(
         PaymentEngineError::NotEnoughFunds(tx.clone()),
+        handle_transaction(&mut database, tx.clone()).unwrap_err()
+    );
+}
+
+#[test]
+fn test_dispute_throws_expected_transaction_to_exist() {
+    let mut database = get_database();
+    let tx = Transaction {
+        tx_type: TransactionType::Dispute,
+        client_id: 1,
+        tx_id: 1,
+        amt: None,
+    };
+
+    assert_eq!(
+        PaymentEngineError::ExpectedTransactionToExist(tx.clone()),
         handle_transaction(&mut database, tx.clone()).unwrap_err()
     );
 }
