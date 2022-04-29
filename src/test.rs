@@ -4,7 +4,6 @@ use crate::{
     models::account::Account,
     models::transaction::TransactionType,
     read,
-    //services::account_state::AccountState,
     PaymentEngineError,
     Transaction,
     TransactionHandlerError,
@@ -17,11 +16,25 @@ fn test() {
 
     let mut database = transaction_handler.get_database();
     let client_1: Account = database.fetch_client_ref(1).into();
+
+    assert!(client_1.available == 7_f32);
+    assert!(client_1.held == 0_f32);
+    assert!(client_1.total == 7_f32);
+    assert!(client_1.locked == true);
+
     let client_2: Account = database.fetch_client_ref(2).into();
 
-    assert!(client_1.total == 5.287655_f32);
+    assert!(client_2.available == 4.0_f32);
+    assert!(client_2.held == 6.0_f32);
     assert!(client_2.total == 10.0_f32);
-    assert!(client_1.held == 1_f32);
+    assert!(client_2.locked == false);
+
+    let client_3: Account = database.fetch_client_ref(3).into();
+
+    assert!(client_3.available == 10.0_f32);
+    assert!(client_3.held == 0.0_f32);
+    assert!(client_3.total == 10.0_f32);
+    assert!(client_3.locked == false);
 }
 
 #[test]
