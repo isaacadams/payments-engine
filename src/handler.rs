@@ -31,7 +31,7 @@ pub fn handle_transaction(d: &mut impl Database, x: Transaction) -> PaymentEngin
                 let account = d.fetch_client_mut(x.client_id);
                 account.dispute(amt);
             } else {
-                return Err(PaymentEngineError::ExpectedTransactionToExist(x))
+                return Err(PaymentEngineError::ExpectedTransactionToExist(x));
             }
         }
         _ => (),
