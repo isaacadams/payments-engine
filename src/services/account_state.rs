@@ -35,6 +35,11 @@ impl AccountState {
         self.held += amount;
     }
 
+    pub fn resolve(&mut self, amount: f32) {
+        self.available += amount;
+        self.held -= amount;
+    }
+
     fn total(&self) -> f32 {
         self.available + self.held
     }

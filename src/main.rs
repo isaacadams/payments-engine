@@ -10,7 +10,7 @@ mod models;
 mod services;
 
 use database::{Database, InMemoryDatabase};
-use error::{PaymentEngineError, PaymentEngineResult};
+use error::{PaymentEngineError, PaymentEngineResult, TransactionHandlerError};
 use handler::TransactionHandler;
 use models::transaction::Transaction;
 

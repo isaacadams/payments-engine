@@ -7,6 +7,7 @@ use crate::{
     //services::account_state::AccountState,
     PaymentEngineError,
     Transaction,
+    TransactionHandlerError,
 };
 
 #[test]
@@ -111,6 +112,54 @@ fn test_dispute_moves_available_to_held() {
 }
 
 #[test]
+fn test_resolve_moves_held_back_to_available() {
+    let mut transaction_handler: TransactionHandler<InMemoryDatabase> = get_database().into();
+
+    transaction_handler
+        .handle(Transaction {
+            tx_type: TransactionType::Deposit,
+            client_id: 1,
+            tx_id: 1,
+            amt: Some(50_f32),
+        })
+        .unwrap();
+
+    transaction_handler
+        .handle(Transaction {
+            tx_type: TransactionType::Deposit,
+            client_id: 1,
+            tx_id: 2,
+            amt: Some(50_f32),
+        })
+        .unwrap();
+
+    transaction_handler
+        .handle(Transaction {
+            tx_type: TransactionType::Dispute,
+            client_id: 1,
+            tx_id: 2,
+            amt: None,
+        })
+        .unwrap();
+
+    transaction_handler
+        .handle(Transaction {
+            tx_type: TransactionType::Resolve,
+            client_id: 1,
+            tx_id: 2,
+            amt: None,
+        })
+        .unwrap();
+
+    let mut database = transaction_handler.get_database();
+    let client_1: Account = database.fetch_client_ref(1).into();
+
+    assert_eq!(client_1.available, 100_f32);
+    assert_eq!(client_1.held, 0_f32);
+    assert_eq!(client_1.total, 100_f32);
+}
+
+#[test]
 fn test_deposit_throws_expected_amt_err() {
     let mut transaction_handler: TransactionHandler<InMemoryDatabase> = get_database().into();
     let tx = Transaction {
@@ -121,7 +170,7 @@ fn test_deposit_throws_expected_amt_err() {
     };
 
     assert_eq!(
-        PaymentEngineError::ExpectedAmount(tx.clone()),
+        PaymentEngineError::TransactionHandler(TransactionHandlerError::ExpectedAmount, tx.clone()),
         transaction_handler.handle(tx.clone()).unwrap_err()
     );
 }
@@ -137,7 +186,7 @@ fn test_withdraw_throws_expected_amt_err() {
     };
 
     assert_eq!(
-        PaymentEngineError::ExpectedAmount(tx.clone()),
+        PaymentEngineError::TransactionHandler(TransactionHandlerError::ExpectedAmount, tx.clone()),
         transaction_handler.handle(tx.clone()).unwrap_err()
     );
 }
@@ -181,7 +230,7 @@ fn test_withdraw_throws_not_enough_funds_err() {
     };
 
     assert_eq!(
-        PaymentEngineError::NotEnoughFunds(tx.clone()),
+        PaymentEngineError::TransactionHandler(TransactionHandlerError::NotEnoughFunds, tx.clone()),
         transaction_handler.handle(tx.clone()).unwrap_err()
     );
 
@@ -205,7 +254,30 @@ fn test_dispute_throws_expected_transaction_to_exist() {
     };
 
     assert_eq!(
-        PaymentEngineError::ExpectedTransactionToExist(tx.clone()),
+        PaymentEngineError::TransactionHandler(
+            TransactionHandlerError::ExpectedTransactionToExist,
+            tx.clone()
+        ),
+        transaction_handler.handle(tx.clone()).unwrap_err()
+    );
+}
+
+#[test]
+fn test_resolve_throws_expected_transaction_to_exist() {
+    let mut transaction_handler: TransactionHandler<InMemoryDatabase> = get_database().into();
+
+    let tx = Transaction {
+        tx_type: TransactionType::Resolve,
+        client_id: 1,
+        tx_id: 1,
+        amt: None,
+    };
+
+    assert_eq!(
+        PaymentEngineError::TransactionHandler(
+            TransactionHandlerError::ExpectedTransactionToExist,
+            tx.clone()
+        ),
         transaction_handler.handle(tx.clone()).unwrap_err()
     );
 }
@@ -231,7 +303,77 @@ fn test_dispute_throws_expected_client_id_to_match() {
     };
 
     assert_eq!(
-        PaymentEngineError::ExpectedClientIdToMatch(tx.clone()),
+        PaymentEngineError::TransactionHandler(
+            TransactionHandlerError::ExpectedClientIdToMatch,
+            tx.clone()
+        ),
+        transaction_handler.handle(tx.clone()).unwrap_err()
+    );
+}
+
+#[test]
+fn test_resolve_throws_expected_client_id_to_match() {
+    let mut transaction_handler: TransactionHandler<InMemoryDatabase> = get_database().into();
+
+    transaction_handler
+        .handle(Transaction {
+            tx_type: TransactionType::Deposit,
+            client_id: 1,
+            tx_id: 1,
+            amt: Some(50_f32),
+        })
+        .unwrap();
+
+    transaction_handler
+        .handle(Transaction {
+            tx_type: TransactionType::Dispute,
+            client_id: 1,
+            tx_id: 1,
+            amt: None,
+        })
+        .unwrap();
+
+    let tx = Transaction {
+        tx_type: TransactionType::Resolve,
+        client_id: 2,
+        tx_id: 1,
+        amt: None,
+    };
+
+    assert_eq!(
+        PaymentEngineError::TransactionHandler(
+            TransactionHandlerError::ExpectedClientIdToMatch,
+            tx.clone()
+        ),
+        transaction_handler.handle(tx.clone()).unwrap_err()
+    );
+}
+
+#[test]
+fn test_resolve_throws_must_be_in_active_dispute() {
+    let mut transaction_handler: TransactionHandler<InMemoryDatabase> = get_database().into();
+
+    transaction_handler
+        .handle(Transaction {
+            tx_type: TransactionType::Deposit,
+            client_id: 1,
+            tx_id: 1,
+            amt: Some(50_f32),
+        })
+        .unwrap();
+
+    let tx = Transaction {
+        tx_type: TransactionType::Resolve,
+        client_id: 1,
+        tx_id: 1,
+        amt: None,
+    };
+
+    assert_eq!(
+        PaymentEngineError::TransactionHandler(
+            TransactionHandlerError::MustBeInActiveDispute,
+            tx.clone()
+        ),
         transaction_handler.handle(tx.clone()).unwrap_err()
     );
 }
