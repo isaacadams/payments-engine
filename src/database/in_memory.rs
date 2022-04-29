@@ -34,14 +34,6 @@ impl Database for InMemoryDatabase {
             .or_insert_with(|| AccountState::new(id))
     }
 
-    fn get_transaction_amt(&self, tx_id: u32) -> Option<f32> {
-        if let Some(txn) = self.transactions.get(&tx_id) {
-            return Some(txn.amt);
-        }
-
-        None
-    }
-
     fn get_transaction(&self, tx_id: u32) -> Option<&TransactionState> {
         if let Some(txn) = self.transactions.get(&tx_id) {
             return Some(txn);
