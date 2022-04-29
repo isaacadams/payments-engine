@@ -26,13 +26,8 @@ impl Database for InMemoryDatabase {
         self.clients.entry(id).or_insert(AccountState::new(id))
     }
 
-    fn print(&self) {
-        let accounts: Vec<Account> = self
-            .clients
-            .iter()
-            .map(|(_, state)| state.into())
-            .collect();
-
-        println!("{:?}", accounts);
+    fn get_accounts(&self) -> Vec<Account> {
+        let accounts: Vec<Account> = self.clients.iter().map(|(_, state)| state.into()).collect();
+        accounts
     }
 }
