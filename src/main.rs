@@ -21,7 +21,7 @@ fn main() {
     let mut transaction_handler: TransactionHandler<InMemoryDatabase> =
         database::get_database().into();
 
-    match read(&mut transaction_handler, &transactions_path) {
+    match read(&mut transaction_handler, transactions_path) {
         Err(e) => {
             println!(
                 "failed to read csv file: {}\n   -> error: {}",
