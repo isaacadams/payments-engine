@@ -6,3 +6,5 @@ deposit,1,4,5.0
 withdraw,2, 5 ,.5
 deposit,2,6,6
 withdraw,2,7,.5
+dispute,1,1,
+dispute,1,10000,

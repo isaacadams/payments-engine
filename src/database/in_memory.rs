@@ -30,6 +30,14 @@ impl Database for InMemoryDatabase {
         self.clients.entry(id).or_insert(AccountState::new(id))
     }
 
+    fn get_transaction_amt(&self, tx_id: u32) -> Option<f32> {
+        if let Some(txn) = self.transactions.get(&tx_id) {
+            return txn.amt;
+        }
+
+        None
+    }
+
     fn get_accounts(&self) -> Vec<Account> {
         let accounts: Vec<Account> = self.clients.iter().map(|(_, state)| state.into()).collect();
         accounts

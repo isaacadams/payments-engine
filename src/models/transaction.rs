@@ -19,5 +19,15 @@ pub struct Transaction {
     pub client_id: u16,
     #[serde(rename = "tx")]
     pub tx_id: u32,
-    pub amt: f32,
+    #[serde(deserialize_with = "csv::invalid_option")]
+    pub amt: Option<f32>,
+}
+
+impl Transaction {
+    pub fn get_amt(&self) -> f32 {
+        match &self.amt {
+            Some(x) => *x,
+            None => 0_f32,
+        }
+    }
 }

@@ -27,6 +27,11 @@ impl AccountState {
         self.available = &self.available + amount;
     }
 
+    pub fn dispute(&mut self, amount: f32) {
+        self.available = &self.available - amount;
+        self.held = &self.held + amount;
+    }
+
     fn total(&self) -> f32 {
         self.available + self.held
     }
