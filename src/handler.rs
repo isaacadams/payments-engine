@@ -1,6 +1,6 @@
 use super::models::transaction::{Transaction, TransactionType};
-//use super::services::account_state::AccountState;
 use super::Database;
+use super::services::transaction_state::TransactionState;
 use super::{PaymentEngineError, PaymentEngineResult, TransactionHandlerError};
 
 pub struct TransactionHandler<T: Database> {
@@ -19,7 +19,7 @@ impl<T: Database> TransactionHandler<T> {
             TransactionType::Withdrawal => self.withdraw(&x),
             TransactionType::Deposit => self.deposit(&x),
             TransactionType::Dispute => self.dispute(&x),
-            TransactionType::Resolve => self.resolve(&x),
+            TransactionType::Resolve => self.resolve(&x).err(),
             _ => None,
             /*
             TransactionType::Chargeback => {},
@@ -44,7 +44,6 @@ impl<T: Database> TransactionHandler<T> {
             Some(amt) => {
                 let account = self.database.fetch_client_mut(x.client_id);
                 if account.withdraw(amt) {
-                    //self.database.add_transaction(x.into());
                     None
                 } else {
                     Some(TransactionHandlerError::NotEnoughFunds)
@@ -59,7 +58,6 @@ impl<T: Database> TransactionHandler<T> {
             Some(amt) => {
                 let account = self.database.fetch_client_mut(x.client_id);
                 account.deposit(amt);
-                //self.database.add_transaction(x.into());
                 None
             }
             None => Some(TransactionHandlerError::ExpectedAmount),
@@ -88,22 +86,40 @@ impl<T: Database> TransactionHandler<T> {
         }
     }
 
-    fn resolve(&mut self, x: &Transaction) -> Option<TransactionHandlerError> {
-        self.database
-            .get_transaction_mut(x.tx_id)
-            .map(|txn| (txn.resolve(), txn.amt))
-            .map_or(
-                Some(TransactionHandlerError::ExpectedTransactionToExist),
-                |(s, amt)| {
-                    if s {
-                        let account = self.database.fetch_client_mut(x.client_id);
-                        account.resolve(amt);
-                        None
-                    } else {
-                        Some(TransactionHandlerError::MustBeInActiveDispute)
-                    }
-                },
-            )
+    fn resolve(&mut self, x: &Transaction) -> Result<(), TransactionHandlerError> {
+        let (s, amt, client_id) = self.fetch_transaction(x.tx_id, x.client_id, |txn| {
+            (txn.resolve(), txn.amt, txn.client_id)
+        })?;
+
+        if !s {
+            return Err(TransactionHandlerError::MustBeInActiveDispute);
+        }
+
+        let account = self.database.fetch_client_mut(client_id);
+        account.resolve(amt);
+
+        Ok(())
+    }
+
+    fn fetch_transaction<F, U>(
+        &mut self,
+        tx_id: u32,
+        client_id: u16,
+        f: F,
+    ) -> Result<U, TransactionHandlerError>
+    where
+        F: FnOnce(&mut TransactionState) -> U,
+    {
+        self.database.get_transaction_mut(tx_id).map_or(
+            Err(TransactionHandlerError::ExpectedTransactionToExist),
+            |txn| {
+                if client_id != txn.client_id {
+                    return Err(TransactionHandlerError::ExpectedClientIdToMatch);
+                }
+
+                Ok(f(txn))
+            },
+        )
     }
 
     pub fn get_database(self) -> T {
