@@ -19,7 +19,7 @@ impl AccountState {
 
     pub fn withdraw(&mut self, amount: f32) -> bool {
         if self.available >= amount {
-            self.available = &self.available - amount;
+            self.available -= amount;
             return true;
         }
 
@@ -27,12 +27,12 @@ impl AccountState {
     }
 
     pub fn deposit(&mut self, amount: f32) {
-        self.available = &self.available + amount;
+        self.available += amount;
     }
 
     pub fn dispute(&mut self, amount: f32) {
-        self.available = &self.available - amount;
-        self.held = &self.held + amount;
+        self.available -= amount;
+        self.held += amount;
     }
 
     fn total(&self) -> f32 {
