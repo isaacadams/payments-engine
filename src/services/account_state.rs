@@ -1,10 +1,10 @@
 use crate::models::account::Account;
 
 pub struct AccountState {
-    pub id: u16,
-    pub available: f32,
-    pub held: f32,
-    pub locked: bool,
+    id: u16,
+    available: f32,
+    held: f32,
+    locked: bool,
 }
 
 impl AccountState {
@@ -38,6 +38,10 @@ impl AccountState {
     pub fn resolve(&mut self, amount: f32) {
         self.available += amount;
         self.held -= amount;
+    }
+
+    pub fn lock(&mut self) {
+        self.locked = true;
     }
 
     fn total(&self) -> f32 {
