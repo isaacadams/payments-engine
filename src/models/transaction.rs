@@ -8,17 +8,16 @@ pub enum TransactionType {
     Deposit,
     Dispute,
     Resolve,
-    Chargeback
+    Chargeback,
 }
-
 
 #[derive(Debug, Deserialize)]
 pub struct Transaction {
     #[serde(rename = "type")]
-    tx_type: TransactionType,
+    pub tx_type: TransactionType,
     #[serde(rename = "client")]
-    client_id: u16,
+    pub client_id: u16,
     #[serde(rename = "tx")]
-    tx_id: u32,
-    amt: f32,
+    pub tx_id: u32,
+    pub amt: f32,
 }

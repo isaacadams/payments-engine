@@ -1,5 +1,5 @@
 #[derive(Debug)]
-pub struct Acccount {
+pub struct Account {
     pub client_id: u16,
     pub available: f32,
     pub held: f32,
