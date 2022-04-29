@@ -14,7 +14,7 @@ impl<T: Database> From<T> for TransactionHandler<T> {
 }
 
 impl<T: Database> TransactionHandler<T> {
-    pub fn handle_transaction(&mut self, x: Transaction) -> PaymentEngineResult<()> {
+    pub fn handle(&mut self, x: Transaction) -> PaymentEngineResult<()> {
         match x.tx_type {
             TransactionType::Withdrawal => {
                 if let Some(amt) = x.amt {

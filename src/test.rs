@@ -28,7 +28,7 @@ fn test_deposit_puts_funds_in_available() {
     let mut transaction_handler: TransactionHandler<InMemoryDatabase> = get_database().into();
 
     transaction_handler
-        .handle_transaction(Transaction {
+        .handle(Transaction {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 1,
@@ -48,7 +48,7 @@ fn test_withdraw_takes_funds_from_available() {
     let mut transaction_handler: TransactionHandler<InMemoryDatabase> = get_database().into();
 
     transaction_handler
-        .handle_transaction(Transaction {
+        .handle(Transaction {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 1,
@@ -56,7 +56,7 @@ fn test_withdraw_takes_funds_from_available() {
         })
         .unwrap();
     transaction_handler
-        .handle_transaction(Transaction {
+        .handle(Transaction {
             tx_type: TransactionType::Withdrawal,
             client_id: 1,
             tx_id: 2,
@@ -76,7 +76,7 @@ fn test_dispute_moves_available_to_held() {
     let mut transaction_handler: TransactionHandler<InMemoryDatabase> = get_database().into();
 
     transaction_handler
-        .handle_transaction(Transaction {
+        .handle(Transaction {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 1,
@@ -85,7 +85,7 @@ fn test_dispute_moves_available_to_held() {
         .unwrap();
 
     transaction_handler
-        .handle_transaction(Transaction {
+        .handle(Transaction {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 2,
@@ -94,7 +94,7 @@ fn test_dispute_moves_available_to_held() {
         .unwrap();
 
     transaction_handler
-        .handle_transaction(Transaction {
+        .handle(Transaction {
             tx_type: TransactionType::Dispute,
             client_id: 1,
             tx_id: 2,
@@ -122,9 +122,7 @@ fn test_deposit_throws_expected_amt_err() {
 
     assert_eq!(
         PaymentEngineError::ExpectedAmount(tx.clone()),
-        transaction_handler
-            .handle_transaction(tx.clone())
-            .unwrap_err()
+        transaction_handler.handle(tx.clone()).unwrap_err()
     );
 }
 
@@ -140,9 +138,7 @@ fn test_withdraw_throws_expected_amt_err() {
 
     assert_eq!(
         PaymentEngineError::ExpectedAmount(tx.clone()),
-        transaction_handler
-            .handle_transaction(tx.clone())
-            .unwrap_err()
+        transaction_handler.handle(tx.clone()).unwrap_err()
     );
 }
 
@@ -151,7 +147,7 @@ fn test_withdraw_throws_not_enough_funds_err() {
     let mut transaction_handler: TransactionHandler<InMemoryDatabase> = get_database().into();
 
     transaction_handler
-        .handle_transaction(Transaction {
+        .handle(Transaction {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 1,
@@ -160,7 +156,7 @@ fn test_withdraw_throws_not_enough_funds_err() {
         .unwrap();
 
     transaction_handler
-        .handle_transaction(Transaction {
+        .handle(Transaction {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 2,
@@ -169,7 +165,7 @@ fn test_withdraw_throws_not_enough_funds_err() {
         .unwrap();
 
     transaction_handler
-        .handle_transaction(Transaction {
+        .handle(Transaction {
             tx_type: TransactionType::Dispute,
             client_id: 1,
             tx_id: 1,
@@ -186,9 +182,7 @@ fn test_withdraw_throws_not_enough_funds_err() {
 
     assert_eq!(
         PaymentEngineError::NotEnoughFunds(tx.clone()),
-        transaction_handler
-            .handle_transaction(tx.clone())
-            .unwrap_err()
+        transaction_handler.handle(tx.clone()).unwrap_err()
     );
 
     let mut database = transaction_handler.get_database();
@@ -212,8 +206,6 @@ fn test_dispute_throws_expected_transaction_to_exist() {
 
     assert_eq!(
         PaymentEngineError::ExpectedTransactionToExist(tx.clone()),
-        transaction_handler
-            .handle_transaction(tx.clone())
-            .unwrap_err()
+        transaction_handler.handle(tx.clone()).unwrap_err()
     );
 }

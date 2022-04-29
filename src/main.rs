@@ -46,7 +46,7 @@ pub fn read<T: Database>(
     for result in rdr.deserialize() {
         let record: Transaction = result?;
         println!("{:?}", record);
-        if let Err(e) = &transaction_handler.handle_transaction(record) {
+        if let Err(e) = &transaction_handler.handle(record) {
             println!("{}", e);
         }
     }
