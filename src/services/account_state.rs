@@ -18,7 +18,7 @@ impl AccountState {
     }
 
     pub fn withdraw(&mut self, amount: f32) -> bool {
-        if self.total() >= amount {
+        if self.available >= amount {
             self.available = &self.available - amount;
             return true;
         }
