@@ -3,10 +3,7 @@ use crate::{
     handler::TransactionHandler,
     models::account::Account,
     models::transaction::TransactionType,
-    read,
-    PaymentEngineError,
-    Transaction,
-    TransactionHandlerError,
+    read, PaymentEngineError, Transaction, TransactionHandlerError,
 };
 
 #[test]

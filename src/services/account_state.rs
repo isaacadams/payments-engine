@@ -53,7 +53,7 @@ impl AccountState {
 impl From<&AccountState> for Account {
     fn from(state: &AccountState) -> Self {
         Account {
-            client_id: state.id,
+            client: state.id,
             available: state.available,
             held: state.held,
             total: state.total(),

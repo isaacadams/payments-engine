@@ -12,7 +12,7 @@ mod services;
 use database::{Database, InMemoryDatabase};
 use error::{PaymentEngineError, PaymentEngineResult, TransactionHandlerError};
 use handler::TransactionHandler;
-use models::transaction::Transaction;
+use models::{account::Account, transaction::Transaction};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -29,9 +29,21 @@ fn main() {
             );
         }
         Ok(_) => {
-            println!("{:?}", transaction_handler.get_database().get_accounts());
+            write_csv_output(transaction_handler.get_database().get_accounts());
         }
     }
+}
+
+fn write_csv_output(accounts: Vec<Account>) {
+    let mut writer = csv::WriterBuilder::new()
+        .has_headers(true)
+        .from_writer(std::io::stdout());
+
+    for a in accounts {
+        writer.serialize(a).unwrap();
+    }
+
+    writer.flush().unwrap();
 }
 
 pub fn read<T: Database>(
@@ -45,7 +57,6 @@ pub fn read<T: Database>(
 
     for result in rdr.deserialize() {
         let record: Transaction = result?;
-        println!("{:?}", record);
         if let Err(e) = &transaction_handler.handle(record) {
             println!("{}", e);
         }
