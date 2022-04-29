@@ -15,18 +15,18 @@ impl<T: Database> From<T> for TransactionHandler<T> {
 
 impl<T: Database> TransactionHandler<T> {
     pub fn handle(&mut self, x: Transaction) -> PaymentEngineResult<()> {
-        let error = match x.tx_type {
+        let result = match x.tx_type {
             TransactionType::Withdrawal => self.withdraw(&x),
             TransactionType::Deposit => self.deposit(&x),
-            TransactionType::Dispute => self.dispute(&x).err(),
-            TransactionType::Resolve => self.resolve(&x).err(),
-            _ => None,
+            TransactionType::Dispute => self.dispute(&x),
+            TransactionType::Resolve => self.resolve(&x),
+            _ => Ok(()),
             /*
             TransactionType::Chargeback => {},
             */
         };
 
-        match error {
+        match result.err() {
             Some(e) => return Err(PaymentEngineError::TransactionHandler(e, x)),
             None => {
                 if x.tx_type == TransactionType::Withdrawal || x.tx_type == TransactionType::Deposit
@@ -34,33 +34,33 @@ impl<T: Database> TransactionHandler<T> {
                     self.database.add_transaction(x.into());
                 }
             }
-        }
+        };
 
         Ok(())
     }
 
-    fn withdraw(&mut self, x: &Transaction) -> Option<TransactionHandlerError> {
+    fn withdraw(&mut self, x: &Transaction) -> Result<(), TransactionHandlerError> {
         match x.amt {
             Some(amt) => {
                 let account = self.database.fetch_client_mut(x.client_id);
                 if account.withdraw(amt) {
-                    None
+                    Ok(())
                 } else {
-                    Some(TransactionHandlerError::NotEnoughFunds)
+                    Err(TransactionHandlerError::NotEnoughFunds)
                 }
             }
-            None => Some(TransactionHandlerError::ExpectedAmount),
+            None => Err(TransactionHandlerError::ExpectedAmount),
         }
     }
 
-    fn deposit(&mut self, x: &Transaction) -> Option<TransactionHandlerError> {
+    fn deposit(&mut self, x: &Transaction) -> Result<(), TransactionHandlerError> {
         match x.amt {
             Some(amt) => {
                 let account = self.database.fetch_client_mut(x.client_id);
                 account.deposit(amt);
-                None
+                Ok(())
             }
-            None => Some(TransactionHandlerError::ExpectedAmount),
+            None => Err(TransactionHandlerError::ExpectedAmount),
         }
     }
 
