@@ -1,6 +1,6 @@
 use super::models::transaction::{Transaction, TransactionType};
-use super::Database;
 use super::services::transaction_state::TransactionState;
+use super::Database;
 use super::{PaymentEngineError, PaymentEngineResult, TransactionHandlerError};
 
 pub struct TransactionHandler<T: Database> {
@@ -18,7 +18,7 @@ impl<T: Database> TransactionHandler<T> {
         let error = match x.tx_type {
             TransactionType::Withdrawal => self.withdraw(&x),
             TransactionType::Deposit => self.deposit(&x),
-            TransactionType::Dispute => self.dispute(&x),
+            TransactionType::Dispute => self.dispute(&x).err(),
             TransactionType::Resolve => self.resolve(&x).err(),
             _ => None,
             /*
@@ -64,26 +64,15 @@ impl<T: Database> TransactionHandler<T> {
         }
     }
 
-    fn dispute(&mut self, x: &Transaction) -> Option<TransactionHandlerError> {
-        match self.database.get_transaction_mut(x.tx_id).map(|txn| {
-            if x.client_id != txn.client_id {
-                Err(TransactionHandlerError::ExpectedClientIdToMatch)
-            } else {
-                //if txn is already disputed, throw error
-                txn.dispute();
-                Ok(txn.amt)
-            }
-        }) {
-            Some(data) => match data {
-                Err(e) => Some(e),
-                Ok(amt) => {
-                    let account = self.database.fetch_client_mut(x.client_id);
-                    account.dispute(amt);
-                    None
-                }
-            },
-            None => Some(TransactionHandlerError::ExpectedTransactionToExist),
-        }
+    fn dispute(&mut self, x: &Transaction) -> Result<(), TransactionHandlerError> {
+        let (amt, client_id) = self.fetch_transaction(x.tx_id, x.client_id, |txn| {
+            txn.dispute();
+            (txn.amt, txn.client_id)
+        })?;
+
+        let account = self.database.fetch_client_mut(client_id);
+        account.dispute(amt);
+        Ok(())
     }
 
     fn resolve(&mut self, x: &Transaction) -> Result<(), TransactionHandlerError> {
