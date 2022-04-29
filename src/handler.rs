@@ -20,7 +20,7 @@ impl<T: Database> TransactionHandler<T> {
                 if let Some(amt) = x.amt {
                     let account = self.database.fetch_client_mut(x.client_id);
                     if account.withdraw(amt) {
-                        self.database.add_transaction(x);
+                        self.database.add_transaction(x.into());
                     } else {
                         return Err(PaymentEngineError::NotEnoughFunds(x));
                     }
@@ -32,7 +32,7 @@ impl<T: Database> TransactionHandler<T> {
                 if let Some(amt) = x.amt {
                     let account = self.database.fetch_client_mut(x.client_id);
                     account.deposit(amt);
-                    self.database.add_transaction(x);
+                    self.database.add_transaction(x.into());
                 } else {
                     return Err(PaymentEngineError::ExpectedAmount(x));
                 }
@@ -63,7 +63,7 @@ impl<T: Database> TransactionHandler<T> {
     fn get_transaction_details(&self, id: u32) -> Option<(f32, u16)> {
         self.database
             .get_transaction(id)
-            .map(|txn| (txn.get_amt(), txn.client_id))
+            .map(|txn| (txn.amt, txn.client_id))
     }
 
     pub fn get_database(self) -> T {

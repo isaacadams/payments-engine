@@ -1,11 +1,11 @@
 use super::common::Database;
-use crate::models::{account::Account, transaction::Transaction};
-use crate::services::account_state::AccountState;
+use crate::models::account::Account;
+use crate::services::{account_state::AccountState, transaction_state::TransactionState};
 use std::collections::HashMap;
 
 pub struct InMemoryDatabase {
     clients: HashMap<u16, AccountState>,
-    transactions: HashMap<u32, Transaction>,
+    transactions: HashMap<u32, TransactionState>,
 }
 
 impl InMemoryDatabase {
@@ -18,7 +18,7 @@ impl InMemoryDatabase {
 }
 
 impl Database for InMemoryDatabase {
-    fn add_transaction(&mut self, x: Transaction) {
+    fn add_transaction(&mut self, x: TransactionState) {
         self.transactions.insert(x.tx_id, x);
     }
 
@@ -36,13 +36,13 @@ impl Database for InMemoryDatabase {
 
     fn get_transaction_amt(&self, tx_id: u32) -> Option<f32> {
         if let Some(txn) = self.transactions.get(&tx_id) {
-            return txn.amt;
+            return Some(txn.amt);
         }
 
         None
     }
 
-    fn get_transaction(&self, tx_id: u32) -> Option<&Transaction> {
+    fn get_transaction(&self, tx_id: u32) -> Option<&TransactionState> {
         if let Some(txn) = self.transactions.get(&tx_id) {
             return Some(txn);
         }
