@@ -21,29 +21,32 @@ fn main() {
     let mut transaction_handler: TransactionHandler<InMemoryDatabase> =
         database::get_database().into();
 
-    match read(&mut transaction_handler, transactions_path) {
-        Err(e) => {
-            println!(
-                "failed to read csv file: {}\n   -> error: {}",
-                transactions_path, e
-            );
-        }
-        Ok(_) => {
-            write_csv_output(transaction_handler.get_database().get_accounts());
-        }
+    if let Some(e) = read(&mut transaction_handler, transactions_path).err() {
+        println!(
+            "failed to read csv file: {}\n   -> error: {}",
+            transactions_path, e
+        );
+        std::process::exit(1);
+    }
+
+    if let Some(e) = write_csv_output(transaction_handler.get_database().get_accounts()).err() {
+        println!("failed to write csv output\n   -> error: {}", e);
+        std::process::exit(1);
     }
 }
 
-fn write_csv_output(accounts: Vec<Account>) {
+fn write_csv_output(accounts: Vec<Account>) -> Result<(), Box<dyn Error>> {
     let mut writer = csv::WriterBuilder::new()
         .has_headers(true)
         .from_writer(std::io::stdout());
 
     for a in accounts {
-        writer.serialize(a).unwrap();
+        writer.serialize(a)?;
     }
 
-    writer.flush().unwrap();
+    writer.flush()?;
+
+    Ok(())
 }
 
 pub fn read<T: Database>(
@@ -57,8 +60,10 @@ pub fn read<T: Database>(
 
     for result in rdr.deserialize() {
         let record: Transaction = result?;
-        if let Err(e) = &transaction_handler.handle(record) {
-            println!("{}", e);
+        //println!("{:?}", record);
+        // ignore handler errors
+        if transaction_handler.handle(record).is_err() {
+            //println!("{}", e);
         }
     }
 
