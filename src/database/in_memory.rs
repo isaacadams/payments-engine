@@ -50,6 +50,10 @@ impl Database for InMemoryDatabase {
         None
     }
 
+    fn get_transaction_mut(&mut self, tx_id: u32) -> Option<&mut TransactionState> {
+        self.transactions.get_mut(&tx_id)
+    }
+
     fn get_accounts(&self) -> Vec<Account> {
         let accounts: Vec<Account> = self.clients.iter().map(|(_, state)| state.into()).collect();
         accounts
