@@ -22,7 +22,11 @@ impl Database for InMemoryDatabase {
         self.transactions.insert(x.tx_id, x);
     }
 
-    fn fetch_client(&mut self, id: u16) -> &mut AccountState {
+    fn fetch_client_mut(&mut self, id: u16) -> &mut AccountState {
+        self.clients.entry(id).or_insert(AccountState::new(id))
+    }
+
+    fn fetch_client_ref(&mut self, id: u16) -> &AccountState {
         self.clients.entry(id).or_insert(AccountState::new(id))
     }
 

@@ -32,14 +32,14 @@ impl AccountState {
     }
 }
 
-impl Into<Account> for &AccountState {
-    fn into(self) -> Account {
+impl From<&AccountState> for Account {
+    fn from(state: &AccountState) -> Self {
         Account {
-            client_id: self.id,
-            available: self.available,
-            held: self.held,
-            total: self.total(),
-            locked: self.locked,
+            client_id: state.id,
+            available: state.available,
+            held: state.held,
+            total: state.total(),
+            locked: state.locked,
         }
     }
 }

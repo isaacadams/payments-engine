@@ -1,6 +1,8 @@
-type,client,tx,amt
-deposit  ,1,1,1
+type,   client,   tx,   amt
+deposit,1,1,1
 withdraw,1,2,0.712345
-  deposit  ,2,3,10.0
+deposit,2,3,5
 deposit,1,4,5.0
-    withdraw ,2, 5 ,.23891
+withdraw,2, 5 ,.5
+deposit,2,6,6
+withdraw,2,7,.5

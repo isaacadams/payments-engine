@@ -1,5 +1,8 @@
 use std::{env, error::Error};
 
+#[cfg(test)]
+mod test;
+
 mod database;
 mod handler;
 mod models;
@@ -25,7 +28,7 @@ fn main() {
     }
 }
 
-fn read(path: &str) -> Result<impl Database, Box<dyn Error>> {
+pub fn read(path: &str) -> Result<impl Database, Box<dyn Error>> {
     let mut rdr = csv::ReaderBuilder::new()
         .trim(csv::Trim::All)
         .has_headers(true)
