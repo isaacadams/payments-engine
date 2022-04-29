@@ -40,7 +40,8 @@ impl AccountState {
         self.held -= amount;
     }
 
-    pub fn lock(&mut self) {
+    pub fn chargeback(&mut self, amount: f32) {
+        self.held -= amount;
         self.locked = true;
     }
 

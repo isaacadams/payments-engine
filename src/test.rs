@@ -160,6 +160,55 @@ fn test_resolve_moves_held_back_to_available() {
 }
 
 #[test]
+fn test_chargeback_moves_held_back_to_available_and_locks_account() {
+    let mut transaction_handler: TransactionHandler<InMemoryDatabase> = get_database().into();
+
+    transaction_handler
+        .handle(Transaction {
+            tx_type: TransactionType::Deposit,
+            client_id: 1,
+            tx_id: 1,
+            amt: Some(50_f32),
+        })
+        .unwrap();
+
+    transaction_handler
+        .handle(Transaction {
+            tx_type: TransactionType::Deposit,
+            client_id: 1,
+            tx_id: 2,
+            amt: Some(50_f32),
+        })
+        .unwrap();
+
+    transaction_handler
+        .handle(Transaction {
+            tx_type: TransactionType::Dispute,
+            client_id: 1,
+            tx_id: 2,
+            amt: None,
+        })
+        .unwrap();
+
+    transaction_handler
+        .handle(Transaction {
+            tx_type: TransactionType::Chargeback,
+            client_id: 1,
+            tx_id: 2,
+            amt: None,
+        })
+        .unwrap();
+
+    let mut database = transaction_handler.get_database();
+    let client_1: Account = database.fetch_client_ref(1).into();
+
+    assert_eq!(client_1.available, 50_f32);
+    assert_eq!(client_1.held, 0_f32);
+    assert_eq!(client_1.total, 50_f32);
+    assert_eq!(client_1.locked, true);
+}
+
+#[test]
 fn test_deposit_throws_expected_amt_err() {
     let mut transaction_handler: TransactionHandler<InMemoryDatabase> = get_database().into();
     let tx = Transaction {

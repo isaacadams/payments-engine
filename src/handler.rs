@@ -1,5 +1,5 @@
 use super::models::transaction::{Transaction, TransactionType};
-use super::services::transaction_state::TransactionState;
+use super::services::{account_state::AccountState, transaction_state::TransactionState};
 use super::Database;
 use super::{PaymentEngineError, PaymentEngineResult, TransactionHandlerError};
 
@@ -19,11 +19,12 @@ impl<T: Database> TransactionHandler<T> {
             TransactionType::Withdrawal => self.withdraw(&x),
             TransactionType::Deposit => self.deposit(&x),
             TransactionType::Dispute => self.dispute(&x),
-            TransactionType::Resolve => self.resolve(&x),
-            _ => Ok(()),
-            /*
-            TransactionType::Chargeback => {},
-            */
+            TransactionType::Resolve => self.resolve(&x, |amt, a| {
+                a.resolve(amt);
+            }),
+            TransactionType::Chargeback => self.resolve(&x, |amt, a| {
+                a.chargeback(amt);
+            }),
         };
 
         match result.err() {
@@ -75,7 +76,10 @@ impl<T: Database> TransactionHandler<T> {
         Ok(())
     }
 
-    fn resolve(&mut self, x: &Transaction) -> Result<(), TransactionHandlerError> {
+    fn resolve<F>(&mut self, x: &Transaction, f: F) -> Result<(), TransactionHandlerError>
+    where
+        F: FnOnce(f32, &mut AccountState) -> (),
+    {
         let (s, amt, client_id) = self.fetch_transaction(x.tx_id, x.client_id, |txn| {
             (txn.resolve(), txn.amt, txn.client_id)
         })?;
@@ -85,8 +89,7 @@ impl<T: Database> TransactionHandler<T> {
         }
 
         let account = self.database.fetch_client_mut(client_id);
-        account.resolve(amt);
-
+        f(amt, account);
         Ok(())
     }
 
