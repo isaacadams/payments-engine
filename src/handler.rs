@@ -78,7 +78,7 @@ impl<T: Database> TransactionHandler<T> {
 
     fn resolve<F>(&mut self, x: &Transaction, f: F) -> Result<(), TransactionHandlerError>
     where
-        F: FnOnce(f32, &mut AccountState) -> (),
+        F: FnOnce(f32, &mut AccountState),
     {
         let (s, amt, client_id) = self.fetch_transaction(x.tx_id, x.client_id, |txn| {
             (txn.resolve(), txn.amt, txn.client_id)
