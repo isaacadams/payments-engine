@@ -23,11 +23,15 @@ impl Database for InMemoryDatabase {
     }
 
     fn fetch_client_mut(&mut self, id: u16) -> &mut AccountState {
-        self.clients.entry(id).or_insert(AccountState::new(id))
+        self.clients
+            .entry(id)
+            .or_insert_with(|| AccountState::new(id))
     }
 
     fn fetch_client_ref(&mut self, id: u16) -> &AccountState {
-        self.clients.entry(id).or_insert(AccountState::new(id))
+        self.clients
+            .entry(id)
+            .or_insert_with(|| AccountState::new(id))
     }
 
     fn get_transaction_amt(&self, tx_id: u32) -> Option<f32> {
