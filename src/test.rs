@@ -209,3 +209,29 @@ fn test_dispute_throws_expected_transaction_to_exist() {
         transaction_handler.handle(tx.clone()).unwrap_err()
     );
 }
+
+#[test]
+fn test_dispute_throws_expected_client_id_to_match() {
+    let mut transaction_handler: TransactionHandler<InMemoryDatabase> = get_database().into();
+
+    transaction_handler
+        .handle(Transaction {
+            tx_type: TransactionType::Deposit,
+            client_id: 1,
+            tx_id: 1,
+            amt: Some(50_f32),
+        })
+        .unwrap();
+
+    let tx = Transaction {
+        tx_type: TransactionType::Dispute,
+        client_id: 2,
+        tx_id: 1,
+        amt: None,
+    };
+
+    assert_eq!(
+        PaymentEngineError::ExpectedClientIdToMatch(tx.clone()),
+        transaction_handler.handle(tx.clone()).unwrap_err()
+    );
+}

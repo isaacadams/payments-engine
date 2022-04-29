@@ -6,6 +6,7 @@ pub enum PaymentEngineError {
     ExpectedAmount(Transaction),
     NotEnoughFunds(Transaction),
     ExpectedTransactionToExist(Transaction),
+    ExpectedClientIdToMatch(Transaction),
 }
 
 impl std::error::Error for PaymentEngineError {}
@@ -27,6 +28,11 @@ impl fmt::Display for PaymentEngineError {
                 f,
                 "error on transaction of type '{:?}': tx id '{}' does not exist",
                 t.tx_type, t.tx_id
+            ),
+            PaymentEngineError::ExpectedClientIdToMatch(t) => write!(
+                f,
+                "error on transaction of type '{:?}': specified client id '{}' did not match the client id for tx #{}",
+                t.tx_type, t.client_id, t.tx_id
             )
         }
     }

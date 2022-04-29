@@ -38,12 +38,22 @@ impl<T: Database> TransactionHandler<T> {
                 }
             }
             TransactionType::Dispute => {
-                if let Some(amt) = self.database.get_transaction_amt(x.tx_id) {
-                    let account = self.database.fetch_client_mut(x.client_id);
-                    account.dispute(amt);
-                } else {
-                    return Err(PaymentEngineError::ExpectedTransactionToExist(x));
+                let (mut amt, mut client_id): (f32, u16) = (0_f32, 0);
+
+                {
+                    if let Some(txn) = self.database.get_transaction(x.tx_id) {
+                        (amt, client_id) = (txn.get_amt(), txn.client_id);
+                    } else {
+                        return Err(PaymentEngineError::ExpectedTransactionToExist(x));
+                    }
                 }
+
+                if x.client_id != client_id {
+                    return Err(PaymentEngineError::ExpectedClientIdToMatch(x));
+                }
+
+                let account = self.database.fetch_client_mut(x.client_id);
+                account.dispute(amt);
             }
             _ => (),
             /*
