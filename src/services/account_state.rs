@@ -17,10 +17,13 @@ impl AccountState {
         }
     }
 
-    pub fn withdraw(&mut self, amount: f32) {
+    pub fn withdraw(&mut self, amount: f32) -> bool {
         if self.total() >= amount {
             self.available = &self.available - amount;
+            return true;
         }
+
+        false
     }
 
     pub fn deposit(&mut self, amount: f32) {

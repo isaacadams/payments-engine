@@ -4,11 +4,13 @@ use std::{env, error::Error};
 mod test;
 
 mod database;
+mod error;
 mod handler;
 mod models;
 mod services;
 
 use database::Database;
+use error::{PaymentEngineError, PaymentEngineResult};
 use models::transaction::Transaction;
 
 fn main() {
@@ -39,7 +41,9 @@ pub fn read(path: &str) -> Result<impl Database, Box<dyn Error>> {
     for result in rdr.deserialize() {
         let record: Transaction = result?;
         println!("{:?}", record);
-        handler::handle_transaction(&mut d, record);
+        if let Err(e) = handler::handle_transaction(&mut d, record) {
+            println!("{}", e);
+        }
     }
 
     Ok(d)

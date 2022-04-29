@@ -1,29 +1,38 @@
 use super::models::transaction::{Transaction, TransactionType};
 //use super::services::account_state::AccountState;
 use super::Database;
+use super::{PaymentEngineError, PaymentEngineResult};
 
-pub fn handle_transaction(d: &mut impl Database, x: Transaction) {
+pub fn handle_transaction(d: &mut impl Database, x: Transaction) -> PaymentEngineResult<()> {
     match x.tx_type {
         TransactionType::Withdrawal => {
-            let account = d.fetch_client_mut(x.client_id);
-            account.withdraw(x.get_amt());
-            d.add_transaction(x);
+            if let Some(amt) = x.amt {
+                let account = d.fetch_client_mut(x.client_id);
+                if account.withdraw(amt) {
+                    d.add_transaction(x);
+                } else {
+                    return Err(PaymentEngineError::NotEnoughFunds(x));
+                }
+            } else {
+                return Err(PaymentEngineError::ExpectedAmount(x));
+            }
         }
         TransactionType::Deposit => {
-            let account = d.fetch_client_mut(x.client_id);
-            account.deposit(x.get_amt());
-            d.add_transaction(x);
+            if let Some(amt) = x.amt {
+                let account = d.fetch_client_mut(x.client_id);
+                account.deposit(amt);
+                d.add_transaction(x);
+            } else {
+                return Err(PaymentEngineError::ExpectedAmount(x));
+            }
         }
         TransactionType::Dispute => {
-            println!("dispute found: {:?}", x);
             if let Some(amt) = d.get_transaction_amt(x.tx_id) {
-                println!("disputed txn found: {:?}", amt);
                 let account = d.fetch_client_mut(x.client_id);
                 account.dispute(amt);
-                return;
+            } else {
+                return Err(PaymentEngineError::ExpectedTransactionToExist(x))
             }
-
-            println!("disputed txn {} does not exist", x.tx_id);
         }
         _ => (),
         /*
@@ -31,4 +40,6 @@ pub fn handle_transaction(d: &mut impl Database, x: Transaction) {
         TransactionType::Chargeback => {},
         */
     };
+
+    Ok(())
 }
