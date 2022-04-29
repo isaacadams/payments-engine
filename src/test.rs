@@ -10,4 +10,5 @@ fn test() {
 
     assert!(client_1.total == 5.287655_f32);
     assert!(client_2.total == 10.0_f32);
+    assert!(client_1.held == 1_f32);
 }
