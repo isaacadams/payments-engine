@@ -41,7 +41,7 @@ impl<T: Database> TransactionHandler<T> {
     }
 
     fn withdraw(&mut self, x: &Transaction) -> Result<(), TransactionHandlerError> {
-        match x.amt {
+        match x.amount {
             Some(amt) => {
                 let account = self.database.fetch_client_mut(x.client_id);
                 if account.withdraw(amt) {
@@ -55,7 +55,7 @@ impl<T: Database> TransactionHandler<T> {
     }
 
     fn deposit(&mut self, x: &Transaction) -> Result<(), TransactionHandlerError> {
-        match x.amt {
+        match x.amount {
             Some(amt) => {
                 let account = self.database.fetch_client_mut(x.client_id);
                 account.deposit(amt);

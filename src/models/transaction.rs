@@ -20,12 +20,12 @@ pub struct Transaction {
     #[serde(rename = "tx")]
     pub tx_id: u32,
     #[serde(deserialize_with = "csv::invalid_option")]
-    pub amt: Option<f32>,
+    pub amount: Option<f32>,
 }
 
 impl Transaction {
     pub fn get_amt(&self) -> f32 {
-        match &self.amt {
+        match &self.amount {
             Some(x) => *x,
             None => 0_f32,
         }

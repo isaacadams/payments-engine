@@ -43,7 +43,7 @@ fn test_deposit_puts_funds_in_available() {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 1,
-            amt: Some(100_f32),
+            amount: Some(100_f32),
         })
         .unwrap();
 
@@ -63,7 +63,7 @@ fn test_withdraw_takes_funds_from_available() {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 1,
-            amt: Some(100_f32),
+            amount: Some(100_f32),
         })
         .unwrap();
     transaction_handler
@@ -71,7 +71,7 @@ fn test_withdraw_takes_funds_from_available() {
             tx_type: TransactionType::Withdrawal,
             client_id: 1,
             tx_id: 2,
-            amt: Some(50.5050_f32),
+            amount: Some(50.5050_f32),
         })
         .unwrap();
 
@@ -91,7 +91,7 @@ fn test_dispute_moves_available_to_held() {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 1,
-            amt: Some(50_f32),
+            amount: Some(50_f32),
         })
         .unwrap();
 
@@ -100,7 +100,7 @@ fn test_dispute_moves_available_to_held() {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 2,
-            amt: Some(50_f32),
+            amount: Some(50_f32),
         })
         .unwrap();
 
@@ -109,7 +109,7 @@ fn test_dispute_moves_available_to_held() {
             tx_type: TransactionType::Dispute,
             client_id: 1,
             tx_id: 2,
-            amt: None,
+            amount: None,
         })
         .unwrap();
 
@@ -130,7 +130,7 @@ fn test_resolve_moves_held_back_to_available() {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 1,
-            amt: Some(50_f32),
+            amount: Some(50_f32),
         })
         .unwrap();
 
@@ -139,7 +139,7 @@ fn test_resolve_moves_held_back_to_available() {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 2,
-            amt: Some(50_f32),
+            amount: Some(50_f32),
         })
         .unwrap();
 
@@ -148,7 +148,7 @@ fn test_resolve_moves_held_back_to_available() {
             tx_type: TransactionType::Dispute,
             client_id: 1,
             tx_id: 2,
-            amt: None,
+            amount: None,
         })
         .unwrap();
 
@@ -157,7 +157,7 @@ fn test_resolve_moves_held_back_to_available() {
             tx_type: TransactionType::Resolve,
             client_id: 1,
             tx_id: 2,
-            amt: None,
+            amount: None,
         })
         .unwrap();
 
@@ -178,7 +178,7 @@ fn test_chargeback_moves_held_back_to_available_and_locks_account() {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 1,
-            amt: Some(50_f32),
+            amount: Some(50_f32),
         })
         .unwrap();
 
@@ -187,7 +187,7 @@ fn test_chargeback_moves_held_back_to_available_and_locks_account() {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 2,
-            amt: Some(50_f32),
+            amount: Some(50_f32),
         })
         .unwrap();
 
@@ -196,7 +196,7 @@ fn test_chargeback_moves_held_back_to_available_and_locks_account() {
             tx_type: TransactionType::Dispute,
             client_id: 1,
             tx_id: 2,
-            amt: None,
+            amount: None,
         })
         .unwrap();
 
@@ -205,7 +205,7 @@ fn test_chargeback_moves_held_back_to_available_and_locks_account() {
             tx_type: TransactionType::Chargeback,
             client_id: 1,
             tx_id: 2,
-            amt: None,
+            amount: None,
         })
         .unwrap();
 
@@ -225,7 +225,7 @@ fn test_deposit_throws_expected_amt_err() {
         tx_type: TransactionType::Deposit,
         client_id: 1,
         tx_id: 1,
-        amt: None,
+        amount: None,
     };
 
     assert_eq!(
@@ -241,7 +241,7 @@ fn test_withdraw_throws_expected_amt_err() {
         tx_type: TransactionType::Withdrawal,
         client_id: 1,
         tx_id: 1,
-        amt: None,
+        amount: None,
     };
 
     assert_eq!(
@@ -259,7 +259,7 @@ fn test_withdraw_throws_not_enough_funds_err() {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 1,
-            amt: Some(50_f32),
+            amount: Some(50_f32),
         })
         .unwrap();
 
@@ -268,7 +268,7 @@ fn test_withdraw_throws_not_enough_funds_err() {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 2,
-            amt: Some(50_f32),
+            amount: Some(50_f32),
         })
         .unwrap();
 
@@ -277,7 +277,7 @@ fn test_withdraw_throws_not_enough_funds_err() {
             tx_type: TransactionType::Dispute,
             client_id: 1,
             tx_id: 1,
-            amt: None,
+            amount: None,
         })
         .unwrap();
 
@@ -285,7 +285,7 @@ fn test_withdraw_throws_not_enough_funds_err() {
         tx_type: TransactionType::Withdrawal,
         client_id: 1,
         tx_id: 3,
-        amt: Some(75_f32),
+        amount: Some(75_f32),
     };
 
     assert_eq!(
@@ -309,7 +309,7 @@ fn test_dispute_throws_expected_transaction_to_exist() {
         tx_type: TransactionType::Dispute,
         client_id: 1,
         tx_id: 1,
-        amt: None,
+        amount: None,
     };
 
     assert_eq!(
@@ -329,7 +329,7 @@ fn test_resolve_throws_expected_transaction_to_exist() {
         tx_type: TransactionType::Resolve,
         client_id: 1,
         tx_id: 1,
-        amt: None,
+        amount: None,
     };
 
     assert_eq!(
@@ -350,7 +350,7 @@ fn test_dispute_throws_expected_client_id_to_match() {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 1,
-            amt: Some(50_f32),
+            amount: Some(50_f32),
         })
         .unwrap();
 
@@ -358,7 +358,7 @@ fn test_dispute_throws_expected_client_id_to_match() {
         tx_type: TransactionType::Dispute,
         client_id: 2,
         tx_id: 1,
-        amt: None,
+        amount: None,
     };
 
     assert_eq!(
@@ -379,7 +379,7 @@ fn test_resolve_throws_expected_client_id_to_match() {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 1,
-            amt: Some(50_f32),
+            amount: Some(50_f32),
         })
         .unwrap();
 
@@ -388,7 +388,7 @@ fn test_resolve_throws_expected_client_id_to_match() {
             tx_type: TransactionType::Dispute,
             client_id: 1,
             tx_id: 1,
-            amt: None,
+            amount: None,
         })
         .unwrap();
 
@@ -396,7 +396,7 @@ fn test_resolve_throws_expected_client_id_to_match() {
         tx_type: TransactionType::Resolve,
         client_id: 2,
         tx_id: 1,
-        amt: None,
+        amount: None,
     };
 
     assert_eq!(
@@ -417,7 +417,7 @@ fn test_resolve_throws_must_be_in_active_dispute() {
             tx_type: TransactionType::Deposit,
             client_id: 1,
             tx_id: 1,
-            amt: Some(50_f32),
+            amount: Some(50_f32),
         })
         .unwrap();
 
@@ -425,7 +425,7 @@ fn test_resolve_throws_must_be_in_active_dispute() {
         tx_type: TransactionType::Resolve,
         client_id: 1,
         tx_id: 1,
-        amt: None,
+        amount: None,
     };
 
     assert_eq!(
